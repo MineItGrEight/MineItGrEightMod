@@ -1,0 +1,8 @@
+{
+  "parent": "migem:custom/animated_model",
+  "textures": {
+    "all": "migem:blocks/untitled_animation",
+    "particle": "migem:blocks/untitled_animation",
+    "0": "migem:blocks/untitled_animation"
+  }
+}

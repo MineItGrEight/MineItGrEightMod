@@ -1,0 +1,25 @@
+{
+  "_fv": 13,
+  "_type": "achievement",
+  "definition": {
+    "achievementName": "Welcome to the sky",
+    "achievementDescription": "Enter Skydimension",
+    "achievementIcon": {
+      "value": "CUSTOM:Undergrounddimension"
+    },
+    "background": "Default",
+    "disableDisplay": false,
+    "showPopup": true,
+    "announceToChat": true,
+    "hideIfNotCompleted": false,
+    "rewardLoot": [],
+    "rewardRecipes": [],
+    "rewardFunction": "No function",
+    "rewardXP": 1,
+    "achievementType": "task",
+    "parent": {
+      "value": "No parent: root"
+    },
+    "triggerxml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"dimension_entered\" x=\"39\" y=\"62\"><field name=\"dimension\">CUSTOM:Undergrounddimension</field><next><block type=\"advancement_trigger\" deletable=\"false\"/></next></block></xml>"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "display": {
+    "background": "minecraft:textures/block/stone.png",
+    "icon": {
+      "item": "migem:undergrounddimension"
+    },
+    "title": {
+      "translate": "advancements.welcometotheunderground.title"
+    },
+    "description": {
+      "translate": "advancements.welcometotheunderground.descr"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "welcometotheunderground": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "migem:undergrounddimension"
+      }
+    }
+  },
+  "rewards": {
+    "experience": 1
+  }
+}

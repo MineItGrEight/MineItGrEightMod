@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "migem:block/lightning_block"
+    }
+  }
+}
