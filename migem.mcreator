@@ -177,8 +177,8 @@
   "sound_elements": [],
   "language_map": {
     "en_us": {
-      "advancements.welcometotheunderground.descr": "Enter Skydimension",
       "entity.migem.chest_entity": "Chest Entity",
+      "advancements.welcometotheunderground.descr": "Enter Skydimension",
       "itemGroup.tabmineitgreightmod": "MineItGrEightmod",
       "advancements.welcometothesky.title": "Welcome to the sky",
       "block.migem.green_block": "Green Block",
