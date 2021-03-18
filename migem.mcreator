@@ -194,11 +194,11 @@
       "block.mineitgreightmod.colorblock": "Färgblock",
       "key.mcreator.die": "Dö",
       "item.migem.undergrounddimension": "Undergrounddimension Portal Igniter",
-      "advancements.welcometotheunderground.title": "Welcome to the sky"
+      "advancements.welcometotheunderground.title": "Welcome to the underground"
     },
     "en_us": {
-      "entity.migem.chest_entity": "Chest Entity",
       "advancements.welcometotheunderground.descr": "Enter Skydimension",
+      "entity.migem.chest_entity": "Chest Entity",
       "itemGroup.tabmineitgreightmod": "MineItGrEightmod",
       "advancements.welcometothesky.title": "Welcome to the sky",
       "block.migem.green_block": "Green Block",
