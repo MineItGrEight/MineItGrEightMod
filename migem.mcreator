@@ -69,7 +69,10 @@
       "compiles": true,
       "locked_code": false,
       "ids": {},
-      "registry_name": "skydimension"
+      "registry_name": "skydimension",
+      "metadata": {
+        "ep": true
+      }
     },
     {
       "name": "Undergrounddimension",
@@ -78,7 +81,10 @@
       "compiles": true,
       "locked_code": false,
       "ids": {},
-      "registry_name": "undergrounddimension"
+      "registry_name": "undergrounddimension",
+      "metadata": {
+        "ep": true
+      }
     },
     {
       "name": "Welcometothesky",
@@ -177,8 +183,8 @@
   "sound_elements": [],
   "language_map": {
     "en_us": {
-      "advancements.welcometotheunderground.descr": "Enter Skydimension",
       "entity.migem.chest_entity": "Chest Entity",
+      "advancements.welcometotheunderground.descr": "Enter Skydimension",
       "itemGroup.tabmineitgreightmod": "MineItGrEightmod",
       "advancements.welcometothesky.title": "Welcome to the sky",
       "block.migem.green_block": "Green Block",
@@ -203,6 +209,7 @@
     "version": "1.0.0",
     "author": "MineItGrEight",
     "websiteURL": "https://mcreator.net",
+    "license": "Not specified",
     "disableForgeVersionCheck": true,
     "serverSideOnly": false,
     "modPicture": "pack",
@@ -210,10 +217,10 @@
     "dependencies": [],
     "dependants": [],
     "mcreatorDependencies": [],
-    "currentGenerator": "forge-1.15.2",
+    "currentGenerator": "forge-1.16.4",
     "credits": "Created using mod maker MCreator - https://mcreator.net/about",
     "modElementsPackage": "net.mcreator.migem",
     "lockBaseModFiles": false
   },
-  "mcreatorVersion": 202000547520
+  "mcreatorVersion": 202100103117
 }

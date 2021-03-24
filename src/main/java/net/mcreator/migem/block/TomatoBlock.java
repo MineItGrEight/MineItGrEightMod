@@ -7,11 +7,11 @@ import net.minecraftforge.common.PlantType;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
-import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Direction;
+import net.minecraft.loot.LootContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.BlockItem;
@@ -53,7 +53,7 @@ public class TomatoBlock extends MigemModElements.ModElement {
 	public static class BlockCustomFlower extends SugarCaneBlock {
 		public BlockCustomFlower() {
 			super(Block.Properties.create(Material.PLANTS).tickRandomly().doesNotBlockMovement().sound(SoundType.CROP).hardnessAndResistance(0f, 0f)
-					.lightValue(0));
+					.setLightLevel(s -> 0));
 			setRegistryName("tomato");
 		}
 
@@ -77,7 +77,7 @@ public class TomatoBlock extends MigemModElements.ModElement {
 
 		@Override
 		public PlantType getPlantType(IBlockReader world, BlockPos pos) {
-			return PlantType.Crop;
+			return PlantType.CROP;
 		}
 
 		@Override

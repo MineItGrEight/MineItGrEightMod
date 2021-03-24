@@ -2,34 +2,34 @@
 package net.mcreator.migem.block;
 
 import net.minecraftforge.registries.ObjectHolder;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.world.BiomeLoadingEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.gen.placement.Placement;
-import net.minecraft.world.gen.placement.CountRangeConfig;
+import net.minecraft.world.gen.feature.template.IRuleTestType;
+import net.minecraft.world.gen.feature.template.BlockMatchRuleTest;
 import net.minecraft.world.gen.feature.OreFeatureConfig;
 import net.minecraft.world.gen.feature.OreFeature;
 import net.minecraft.world.gen.GenerationStage;
 import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.World;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.ISeedReader;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.Explosion;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.loot.LootContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.BlockItem;
-import net.minecraft.fluid.IFluidState;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Entity;
@@ -57,6 +57,7 @@ public class LightningBlockBlock extends MigemModElements.ModElement {
 	public static final Block block = null;
 	public LightningBlockBlock(MigemModElements instance) {
 		super(instance, 9);
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Override
@@ -73,13 +74,9 @@ public class LightningBlockBlock extends MigemModElements.ModElement {
 	}
 	public static class CustomBlock extends Block {
 		public CustomBlock() {
-			super(Block.Properties.create(Material.ROCK).sound(SoundType.ANVIL).hardnessAndResistance(1f, 10f).lightValue(0).notSolid());
+			super(Block.Properties.create(Material.ROCK).sound(SoundType.ANVIL).hardnessAndResistance(1f, 10f).setLightLevel(s -> 0).notSolid()
+					.setOpaque((bs, br, bp) -> false));
 			setRegistryName("lightning_block");
-		}
-
-		@Override
-		public boolean isNormalCube(BlockState state, IBlockReader worldIn, BlockPos pos) {
-			return false;
 		}
 
 		@Override
@@ -131,7 +128,7 @@ public class LightningBlockBlock extends MigemModElements.ModElement {
 		}
 
 		@Override
-		public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity entity, boolean willHarvest, IFluidState fluid) {
+		public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity entity, boolean willHarvest, FluidState fluid) {
 			boolean retval = super.removedByPlayer(state, world, pos, entity, willHarvest, fluid);
 			int x = pos.getX();
 			int y = pos.getY();
@@ -230,25 +227,25 @@ public class LightningBlockBlock extends MigemModElements.ModElement {
 			return ActionResultType.SUCCESS;
 		}
 	}
-	@Override
-	public void init(FMLCommonSetupEvent event) {
-		for (Biome biome : ForgeRegistries.BIOMES.getValues()) {
-			biome.addFeature(GenerationStage.Decoration.UNDERGROUND_ORES, new OreFeature(OreFeatureConfig::deserialize) {
-				@Override
-				public boolean place(IWorld world, ChunkGenerator generator, Random rand, BlockPos pos, OreFeatureConfig config) {
-					DimensionType dimensionType = world.getDimension().getType();
-					boolean dimensionCriteria = false;
-					if (dimensionType == DimensionType.OVERWORLD)
-						dimensionCriteria = true;
-					if (dimensionType == DimensionType.THE_NETHER)
-						dimensionCriteria = true;
-					if (dimensionType == DimensionType.THE_END)
-						dimensionCriteria = true;
-					if (!dimensionCriteria)
-						return false;
-					return super.place(world, generator, rand, pos, config);
-				}
-			}.withConfiguration(new OreFeatureConfig(OreFeatureConfig.FillerBlockType.create("lightning_block", "lightning_block", blockAt -> {
+	@SubscribeEvent
+	public void addFeatureToBiomes(BiomeLoadingEvent event) {
+		event.getGeneration().getFeatures(GenerationStage.Decoration.UNDERGROUND_ORES).add(() -> new OreFeature(OreFeatureConfig.CODEC) {
+			@Override
+			public boolean generate(ISeedReader world, ChunkGenerator generator, Random rand, BlockPos pos, OreFeatureConfig config) {
+				RegistryKey<World> dimensionType = world.getWorld().getDimensionKey();
+				boolean dimensionCriteria = false;
+				if (dimensionType == World.OVERWORLD)
+					dimensionCriteria = true;
+				if (dimensionType == World.THE_NETHER)
+					dimensionCriteria = true;
+				if (dimensionType == World.THE_END)
+					dimensionCriteria = true;
+				if (!dimensionCriteria)
+					return false;
+				return super.generate(world, generator, rand, pos, config);
+			}
+		}.withConfiguration(new OreFeatureConfig(new BlockMatchRuleTest(Blocks.GRASS_BLOCK.getDefaultState().getBlock()) {
+			public boolean test(BlockState blockAt, Random random) {
 				boolean blockCriteria = false;
 				if (blockAt.getBlock() == Blocks.GRASS_BLOCK.getDefaultState().getBlock())
 					blockCriteria = true;
@@ -259,7 +256,11 @@ public class LightningBlockBlock extends MigemModElements.ModElement {
 				if (blockAt.getBlock() == Blocks.NETHER_QUARTZ_ORE.getDefaultState().getBlock())
 					blockCriteria = true;
 				return blockCriteria;
-			}), block.getDefaultState(), 1)).withPlacement(Placement.COUNT_RANGE.configure(new CountRangeConfig(1, 70, 70, 100))));
-		}
+			}
+
+			protected IRuleTestType<?> getType() {
+				return IRuleTestType.BLOCK_MATCH;
+			}
+		}, block.getDefaultState(), 1)).range(100).square().func_242731_b(1));
 	}
 }

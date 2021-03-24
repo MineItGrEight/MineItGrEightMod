@@ -12,25 +12,30 @@ import net.minecraftforge.fml.network.FMLPlayMessages;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.world.BiomeLoadingEvent;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
+import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraft.world.World;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Direction;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.pathfinding.FlyingPathNavigator;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.IPacket;
@@ -50,8 +55,11 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.ai.goal.FollowParentGoal;
 import net.minecraft.entity.ai.goal.BreedGoal;
 import net.minecraft.entity.ai.controller.FlyingMovementController;
+import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ILivingEntityData;
 import net.minecraft.entity.EntityType;
@@ -85,7 +93,8 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 	public static EntityType entity = null;
 	public ChestEntityEntity(MigemModElements instance) {
 		super(instance, 14);
-		FMLJavaModLoadingContext.get().getModEventBus().register(this);
+		FMLJavaModLoadingContext.get().getModEventBus().register(new ModelRegisterHandler());
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Override
@@ -98,27 +107,40 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 				.setRegistryName("chest_entity_spawn_egg"));
 	}
 
+	@SubscribeEvent
+	public void addFeatureToBiomes(BiomeLoadingEvent event) {
+		event.getSpawns().getSpawner(EntityClassification.CREATURE).add(new MobSpawnInfo.Spawners(entity, 20, 4, 4));
+	}
+
 	@Override
 	public void init(FMLCommonSetupEvent event) {
-		for (Biome biome : ForgeRegistries.BIOMES.getValues()) {
-			biome.getSpawns(EntityClassification.CREATURE).add(new Biome.SpawnListEntry(entity, 20, 4, 4));
-		}
+		DeferredWorkQueue.runLater(this::setupAttributes);
 		EntitySpawnPlacementRegistry.register(entity, EntitySpawnPlacementRegistry.PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
 				(entityType, world, reason, pos,
 						random) -> (world.getBlockState(pos.down()).getMaterial() == Material.ORGANIC && world.getLightSubtracted(pos, 0) > 8));
 	}
-
-	@SubscribeEvent
-	@OnlyIn(Dist.CLIENT)
-	public void registerModels(ModelRegistryEvent event) {
-		RenderingRegistry.registerEntityRenderingHandler(entity, renderManager -> {
-			return new MobRenderer(renderManager, new ModelChest_Entity(), 0.5f) {
-				@Override
-				public ResourceLocation getEntityTexture(Entity entity) {
-					return new ResourceLocation("migem:textures/chest_entity.png");
-				}
-			};
-		});
+	private static class ModelRegisterHandler {
+		@SubscribeEvent
+		@OnlyIn(Dist.CLIENT)
+		public void registerModels(ModelRegistryEvent event) {
+			RenderingRegistry.registerEntityRenderingHandler(entity, renderManager -> {
+				return new MobRenderer(renderManager, new ModelChest_Entity(), 0.5f) {
+					@Override
+					public ResourceLocation getEntityTexture(Entity entity) {
+						return new ResourceLocation("migem:textures/chest_entity.png");
+					}
+				};
+			});
+		}
+	}
+	private void setupAttributes() {
+		AttributeModifierMap.MutableAttribute ammma = MobEntity.func_233666_p_();
+		ammma = ammma.createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.3);
+		ammma = ammma.createMutableAttribute(Attributes.MAX_HEALTH, 10);
+		ammma = ammma.createMutableAttribute(Attributes.ARMOR, 0);
+		ammma = ammma.createMutableAttribute(Attributes.ATTACK_DAMAGE, 3);
+		ammma = ammma.createMutableAttribute(Attributes.FLYING_SPEED, 0.3);
+		GlobalEntityTypeAttributes.put(entity, ammma.create());
 	}
 	public static class CustomEntity extends TameableEntity {
 		public CustomEntity(FMLPlayMessages.SpawnEntity packet, World world) {
@@ -222,9 +244,9 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 		}
 
 		@Override
-		public boolean processInteract(PlayerEntity sourceentity, Hand hand) {
+		public ActionResultType func_230254_b_(PlayerEntity sourceentity, Hand hand) {
 			ItemStack itemstack = sourceentity.getHeldItem(hand);
-			boolean retval = true;
+			ActionResultType retval = ActionResultType.func_233537_a_(this.world.isRemote());
 			if (sourceentity.isSecondaryUseActive()) {
 				if (sourceentity instanceof ServerPlayerEntity) {
 					NetworkHooks.openGui((ServerPlayerEntity) sourceentity, new INamedContainerProvider() {
@@ -236,37 +258,39 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 						@Override
 						public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
 							PacketBuffer packetBuffer = new PacketBuffer(Unpooled.buffer());
-							packetBuffer.writeBlockPos(new BlockPos(sourceentity));
+							packetBuffer.writeBlockPos(new BlockPos(sourceentity.getPosition()));
 							packetBuffer.writeByte(0);
 							packetBuffer.writeVarInt(CustomEntity.this.getEntityId());
 							return new ChestEntityGuiGui.GuiContainerMod(id, inventory, packetBuffer);
 						}
 					}, buf -> {
-						buf.writeBlockPos(new BlockPos(sourceentity));
+						buf.writeBlockPos(new BlockPos(sourceentity.getPosition()));
 						buf.writeByte(0);
 						buf.writeVarInt(this.getEntityId());
 					});
 				}
-				return true;
+				return ActionResultType.func_233537_a_(this.world.isRemote());
 			}
 			Item item = itemstack.getItem();
 			if (itemstack.getItem() instanceof SpawnEggItem) {
-				retval = super.processInteract(sourceentity, hand);
-			} else if (this.world.isRemote) {
-				retval = this.isTamed() && this.isOwner(sourceentity) || this.isBreedingItem(itemstack);
+				retval = super.func_230254_b_(sourceentity, hand);
+			} else if (this.world.isRemote()) {
+				retval = (this.isTamed() && this.isOwner(sourceentity) || this.isBreedingItem(itemstack))
+						? ActionResultType.func_233537_a_(this.world.isRemote())
+						: ActionResultType.PASS;
 			} else {
 				if (this.isTamed()) {
 					if (this.isOwner(sourceentity)) {
 						if (item.isFood() && this.isBreedingItem(itemstack) && this.getHealth() < this.getMaxHealth()) {
 							this.consumeItemFromStack(sourceentity, itemstack);
 							this.heal((float) item.getFood().getHealing());
-							retval = true;
+							retval = ActionResultType.func_233537_a_(this.world.isRemote());
 						} else if (this.isBreedingItem(itemstack) && this.getHealth() < this.getMaxHealth()) {
 							this.consumeItemFromStack(sourceentity, itemstack);
 							this.heal(4);
-							retval = true;
+							retval = ActionResultType.func_233537_a_(this.world.isRemote());
 						} else {
-							retval = super.processInteract(sourceentity, hand);
+							retval = super.func_230254_b_(sourceentity, hand);
 						}
 					}
 				} else if (this.isBreedingItem(itemstack)) {
@@ -278,10 +302,10 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 						this.world.setEntityState(this, (byte) 6);
 					}
 					this.enablePersistence();
-					retval = true;
+					retval = ActionResultType.func_233537_a_(this.world.isRemote());
 				} else {
-					retval = super.processInteract(sourceentity, hand);
-					if (retval)
+					retval = super.func_230254_b_(sourceentity, hand);
+					if (retval == ActionResultType.SUCCESS || retval == ActionResultType.CONSUME)
 						this.enablePersistence();
 				}
 			}
@@ -294,26 +318,9 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 		}
 
 		@Override
-		protected void registerAttributes() {
-			super.registerAttributes();
-			if (this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED) != null)
-				this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3);
-			if (this.getAttribute(SharedMonsterAttributes.MAX_HEALTH) != null)
-				this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10);
-			if (this.getAttribute(SharedMonsterAttributes.ARMOR) != null)
-				this.getAttribute(SharedMonsterAttributes.ARMOR).setBaseValue(0);
-			if (this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE) == null)
-				this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-			this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3);
-			if (this.getAttribute(SharedMonsterAttributes.FLYING_SPEED) == null)
-				this.getAttributes().registerAttribute(SharedMonsterAttributes.FLYING_SPEED);
-			this.getAttribute(SharedMonsterAttributes.FLYING_SPEED).setBaseValue(0.3);
-		}
-
-		@Override
-		public AgeableEntity createChild(AgeableEntity ageable) {
-			CustomEntity retval = (CustomEntity) entity.create(this.world);
-			retval.onInitialSpawn(this.world, this.world.getDifficultyForLocation(new BlockPos(retval)), SpawnReason.BREEDING,
+		public AgeableEntity func_241840_a(ServerWorld serverWorld, AgeableEntity ageable) {
+			CustomEntity retval = (CustomEntity) entity.create(serverWorld);
+			retval.onInitialSpawn(serverWorld, serverWorld.getDifficultyForLocation(new BlockPos(retval.getPosition())), SpawnReason.BREEDING,
 					(ILivingEntityData) null, (CompoundNBT) null);
 			return retval;
 		}
@@ -328,7 +335,7 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 		}
 
 		@Override
-		public void travel(Vec3d dir) {
+		public void travel(Vector3d dir) {
 			Entity entity = this.getPassengers().isEmpty() ? null : (Entity) this.getPassengers().get(0);
 			if (this.isBeingRidden()) {
 				this.rotationYaw = entity.rotationYaw;
@@ -340,10 +347,10 @@ public class ChestEntityEntity extends MigemModElements.ModElement {
 				this.rotationYawHead = entity.rotationYaw;
 				this.stepHeight = 1.0F;
 				if (entity instanceof LivingEntity) {
-					this.setAIMoveSpeed((float) this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue());
+					this.setAIMoveSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED));
 					float forward = ((LivingEntity) entity).moveForward;
 					float strafe = ((LivingEntity) entity).moveStrafing;
-					super.travel(new Vec3d(strafe, 0, forward));
+					super.travel(new Vector3d(strafe, 0, forward));
 				}
 				this.prevLimbSwingAmount = this.limbSwingAmount;
 				double d1 = this.getPosX() - this.prevPosX;
