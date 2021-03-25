@@ -183,9 +183,10 @@
   "sound_elements": [],
   "language_map": {
     "en_us": {
-      "entity.migem.chest_entity": "Chest Entity",
       "advancements.welcometotheunderground.descr": "Enter Skydimension",
+      "entity.migem.chest_entity": "Chest Entity",
       "itemGroup.tabmineitgreightmod": "MineItGrEightmod",
+      "key.migem.die": "Die",
       "advancements.welcometothesky.title": "Welcome to the sky",
       "block.migem.green_block": "Green Block",
       "item.migem.chest_entity": "Chest Entity Spawn Egg",
@@ -203,6 +204,10 @@
       "advancements.welcometotheunderground.title": "Welcome to the sky"
     }
   },
+  "foldersRoot": {
+    "name": "~",
+    "children": []
+  },
   "workspaceSettings": {
     "modid": "migem",
     "modName": "MineItGrEightMod",
@@ -217,10 +222,10 @@
     "dependencies": [],
     "dependants": [],
     "mcreatorDependencies": [],
-    "currentGenerator": "forge-1.16.4",
+    "currentGenerator": "forge-1.16.5",
     "credits": "Created using mod maker MCreator - https://mcreator.net/about",
     "modElementsPackage": "net.mcreator.migem",
     "lockBaseModFiles": false
   },
-  "mcreatorVersion": 202100103117
+  "mcreatorVersion": 202100112313
 }

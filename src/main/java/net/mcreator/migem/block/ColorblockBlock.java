@@ -40,7 +40,7 @@ public class ColorblockBlock extends MigemModElements.ModElement {
 	public static class CustomBlock extends Block {
 		public CustomBlock() {
 			super(Block.Properties.create(Material.ROCK).sound(SoundType.STONE).hardnessAndResistance(-1, 3600000).setLightLevel(s -> 0)
-					.harvestLevel(1).harvestTool(ToolType.PICKAXE));
+					.harvestLevel(1).harvestTool(ToolType.PICKAXE).setRequiresTool());
 			setRegistryName("colorblock");
 		}
 

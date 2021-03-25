@@ -1,7 +1,8 @@
 {
-  "entity.migem.chest_entity": "Chest Entity",
   "advancements.welcometotheunderground.descr": "Enter Skydimension",
+  "entity.migem.chest_entity": "Chest Entity",
   "itemGroup.tabmineitgreightmod": "MineItGrEightmod",
+  "key.migem.die": "Die",
   "advancements.welcometothesky.title": "Welcome to the sky",
   "block.migem.green_block": "Green Block",
   "item.migem.chest_entity": "Chest Entity Spawn Egg",

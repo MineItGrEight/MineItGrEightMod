@@ -39,7 +39,7 @@ public class DieKeyBinding extends MigemModElements.ModElement {
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public void initElements() {
-		keys = new KeyBinding("key.mcreator.die", GLFW.GLFW_KEY_I, "key.categories.misc");
+		keys = new KeyBinding("key.migem.die", GLFW.GLFW_KEY_I, "key.categories.misc");
 		ClientRegistry.registerKeyBinding(keys);
 		MinecraftForge.EVENT_BUS.register(this);
 	}
