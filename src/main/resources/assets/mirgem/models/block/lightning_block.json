@@ -1,0 +1,8 @@
+{
+  "parent": "mirgem:custom/lightning_block",
+  "textures": {
+    "all": "mirgem:blocks/lightning_block",
+    "particle": "mirgem:blocks/lightning_block",
+    "missing": "mirgem:blocks/lightning_block"
+  }
+}

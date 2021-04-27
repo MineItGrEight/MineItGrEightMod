@@ -1,7 +1,0 @@
-{
-  "parent": "block/crop",
-  "textures": {
-    "crop": "migem:blocks/tomato",
-    "particle": "migem:blocks/tomato"
-  }
-}

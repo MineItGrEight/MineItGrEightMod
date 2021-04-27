@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "mirgem:blocks/colorblock_red",
+    "up": "mirgem:blocks/colorblock_green",
+    "north": "mirgem:blocks/colorblock_yellow",
+    "east": "mirgem:blocks/colorblock_blue",
+    "south": "mirgem:blocks/colorblock_turquoise",
+    "west": "mirgem:blocks/colorblock_pink",
+    "particle": "mirgem:blocks/colorblock_red"
+  }
+}
