@@ -80,7 +80,9 @@ import eu.aldin.mirge.mirgem.MirgemModElements;
 
 @MirgemModElements.ModElement.Tag
 public class ChestEntityEntity extends MirgemModElements.ModElement {
-	public static EntityType entity = null;
+	public static EntityType entity = (EntityType.Builder.<CustomEntity>create(CustomEntity::new, EntityClassification.CREATURE)
+			.setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(CustomEntity::new).immuneToFire()
+			.size(0.6f, 1.8f)).build("chest_entity").setRegistryName("chest_entity");
 	public ChestEntityEntity(MirgemModElements instance) {
 		super(instance, 14);
 		FMLJavaModLoadingContext.get().getModEventBus().register(new ChestEntityRenderer.ModelRegisterHandler());
@@ -90,9 +92,6 @@ public class ChestEntityEntity extends MirgemModElements.ModElement {
 
 	@Override
 	public void initElements() {
-		entity = (EntityType.Builder.<CustomEntity>create(CustomEntity::new, EntityClassification.CREATURE).setShouldReceiveVelocityUpdates(true)
-				.setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(CustomEntity::new).immuneToFire().size(0.6f, 1.8f))
-						.build("chest_entity").setRegistryName("chest_entity");
 		elements.entities.add(() -> entity);
 		elements.items.add(() -> new SpawnEggItem(entity, -10079488, -16777216, new Item.Properties().group(MineItGrEightmodItemGroup.tab))
 				.setRegistryName("chest_entity_spawn_egg"));
